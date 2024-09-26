@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 
 interface Question {
   id: number
-  type: 'multiple-choice' | 'open-ended' | 'coding'
+  type: 'multiple-choice' | 'open-ended' | 'code'
   question: string
   choices?: string[]
   correctAnswer: string
@@ -32,7 +32,8 @@ export default function QuestionComponent({ question, onAnswer, onFlag }: Questi
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-semibold text-blue-800">{question.question}</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+     <div className={`flex ${question.type === 'code' ? 'flex-row' : 'flex-col'} p-4 gap-4`}>
+       <form onSubmit={handleSubmit} className="space-y-4">
         {question.type === 'multiple-choice' && question.choices && (
           <RadioGroup value={answer} onValueChange={setAnswer}>
             {question.choices.map((choice, index) => (
@@ -44,14 +45,16 @@ export default function QuestionComponent({ question, onAnswer, onFlag }: Questi
           </RadioGroup>
         )}
         {question.type === 'open-ended' && (
-          <Input
+       
+            <Input
             type="text"
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
             placeholder="Type your answer here"
           />
+    
         )}
-        {question.type === 'coding' && (
+        {question.type === 'code' && (
           <div className="text-sm text-blue-600">
             Use the code editor below to write your solution.
           </div>
@@ -63,6 +66,7 @@ export default function QuestionComponent({ question, onAnswer, onFlag }: Questi
         <Button onClick={() => onFlag('ask-less-often')} variant="outline">Ask Less Often</Button>
         <Button onClick={() => onFlag('pass')} variant="outline">Pass</Button>
       </div>
+     </div>
     </div>
   )
 }
