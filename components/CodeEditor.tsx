@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import SyntaxHighlighter from 'react-syntax-highlighter';
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
-export default function CodeEditor() {
-  const [code, setCode] = useState('')
+export default function CodeEditor({ code, setCode }) {
+ 
   const [output, setOutput] = useState('')
 
   const runCode = () => {
@@ -26,6 +28,9 @@ export default function CodeEditor() {
         className="font-mono"
         rows={10}
       />
+    <SyntaxHighlighter language="javascript" style={docco}>
+        {code}
+      </SyntaxHighlighter>
       <Button onClick={runCode}>Run Code</Button>
       <div className="p-4 bg-gray-100 rounded">
         <h3 className="font-semibold">Output:</h3>
