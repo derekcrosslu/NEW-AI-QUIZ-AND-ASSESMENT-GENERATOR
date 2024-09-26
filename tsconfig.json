@@ -12,6 +12,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "types": ["lucide-react", "class-variance-authority","@radix-ui/react-slot","react"],
     "plugins": [
       {
         "name": "next"
