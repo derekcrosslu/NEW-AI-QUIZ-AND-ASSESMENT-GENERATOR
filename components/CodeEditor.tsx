@@ -1,12 +1,16 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import SyntaxHighlighter from 'react-syntax-highlighter'
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 
-export default function CodeEditor({ code, setCode }) {
- 
-  const [output, setOutput] = useState('')
+interface CodeEditorProps {
+  code: string
+  setCode: React.Dispatch<React.SetStateAction<string>>
+}
+
+export default function CodeEditor({ code, setCode }: CodeEditorProps) {
+  const [output, setOutput] = useState<string>('')
 
   const runCode = () => {
     try {
@@ -15,7 +19,11 @@ export default function CodeEditor({ code, setCode }) {
       const result = eval(code)
       setOutput(String(result))
     } catch (error) {
-      setOutput(`Error: ${error}`)
+      if (error instanceof Error) {
+        setOutput(`Error: ${error.message}`)
+      } else {
+        setOutput('An unknown error occurred')
+      }
     }
   }
 
@@ -28,13 +36,13 @@ export default function CodeEditor({ code, setCode }) {
         className="font-mono"
         rows={10}
       />
-    <SyntaxHighlighter language="javascript" style={docco}>
+      <SyntaxHighlighter language="javascript" style={docco}>
         {code}
       </SyntaxHighlighter>
       <Button onClick={runCode}>Run Code</Button>
       <div className="p-4 bg-gray-100 rounded">
         <h3 className="font-semibold">Output:</h3>
-        <pre>{output}</pre>
+        <pre className="whitespace-pre-wrap break-words">{output}</pre>
       </div>
     </div>
   )

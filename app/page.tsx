@@ -1,4 +1,4 @@
-import { QuestionAnswerAppComponent } from "@/components/question-answer-app"
+import QuestionAnswerAppComponent  from "@/components/QuestionAnswerApp"
 
 export default function Page() {
   return <QuestionAnswerAppComponent />

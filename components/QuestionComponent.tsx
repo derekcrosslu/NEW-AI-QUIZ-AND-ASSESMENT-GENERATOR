@@ -1,16 +1,18 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import CodeEditor from './CodeEditor'
 
 interface Question {
   id: number
   type: 'multiple-choice' | 'open-ended' | 'code'
   question: string
-  choices?: string[]
+  choices: string[] | null
   correctAnswer: string
-  explanation: string
+  explanation: string | null
   flag: 'dont-ask-again' | 'ask-less-often' | 'pass' | null
 }
 
@@ -32,8 +34,7 @@ export default function QuestionComponent({ question, onAnswer, onFlag }: Questi
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-semibold text-blue-800">{question.question}</h2>
-     <div className={`flex ${question.type === 'code' ? 'flex-row' : 'flex-col'} p-4 gap-4`}>
-       <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {question.type === 'multiple-choice' && question.choices && (
           <RadioGroup value={answer} onValueChange={setAnswer}>
             {question.choices.map((choice, index) => (
@@ -45,19 +46,25 @@ export default function QuestionComponent({ question, onAnswer, onFlag }: Questi
           </RadioGroup>
         )}
         {question.type === 'open-ended' && (
-       
-            <Input
-            type="text"
+          <Textarea
             value={answer}
             onChange={(e) => setAnswer(e.target.value)}
             placeholder="Type your answer here"
+            rows={4}
           />
-    
         )}
         {question.type === 'code' && (
-          <div className="text-sm text-blue-600">
-            Use the code editor below to write your solution.
-          </div>
+          <CodeEditor
+            code={answer}
+            setCode={setAnswer}
+          />
+          // <Textarea
+          //   value={answer}
+          //   onChange={(e) => setAnswer(e.target.value)}
+          //   placeholder="Write your code here"
+          //   rows={8}
+          //   className="font-mono"
+          // />
         )}
         <Button type="submit">Submit Answer</Button>
       </form>
@@ -66,7 +73,6 @@ export default function QuestionComponent({ question, onAnswer, onFlag }: Questi
         <Button onClick={() => onFlag('ask-less-often')} variant="outline">Ask Less Often</Button>
         <Button onClick={() => onFlag('pass')} variant="outline">Pass</Button>
       </div>
-     </div>
     </div>
   )
 }
