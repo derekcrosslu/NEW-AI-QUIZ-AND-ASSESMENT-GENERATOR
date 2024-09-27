@@ -45,7 +45,9 @@ An intelligent quiz application designed to enhance coding skills across multipl
 8. hability to export quizes
 9. create CI/CD pipeline for easy feature creation and community involvement
 10. Add geolocation and user identity verification (private for team members only)
-11. dark mode
+11. Add internationalization
+12. Add progress tracking wich charts for easy visualization of goals
+13. dark mode
 
 ### Mid-term Goals
 1. Enable quiz generation from existing quizzes
