@@ -8,13 +8,28 @@ export interface Question {
   flag: 'dont-ask-again' | 'ask-less-often' | 'pass' | null;
 }
 
+
+
+interface CreateNoteData {
+  questionId: number
+  question: string
+  userAnswer: string
+  correctAnswer: string
+  isCorrect: boolean
+  explanation: string
+  score: number
+}
+
+
 export interface Note {
   id: number;
-  questionId: number | null;
+  questionId: string;
   question: string;
   userAnswer: string;
-  explanation: string;
+  correctAnswer: string;
   isCorrect: boolean;
-  notes: string;
+  explanation: string;
+  score: number;
+  comments: string;
   versions: string[];
 }

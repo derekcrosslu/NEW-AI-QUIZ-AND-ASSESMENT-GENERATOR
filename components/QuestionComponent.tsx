@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import CodeEditor from './CodeEditor'
+import CodeEditor from './CodeEditorPlus'
 
 interface Question {
   id: number
@@ -55,18 +55,11 @@ export default function QuestionComponent({ question, onAnswer, onFlag }: Questi
         )}
         {question.type === 'code' && (
           <CodeEditor
-            code={answer}
-            setCode={setAnswer}
-          />
-          // <Textarea
-          //   value={answer}
-          //   onChange={(e) => setAnswer(e.target.value)}
-          //   placeholder="Write your code here"
-          //   rows={8}
-          //   className="font-mono"
-          // />
+          code={answer}
+          onChange={setAnswer}
+        />
         )}
-        <Button type="submit">Submit Answer</Button>
+        <Button type="submit" >Submit Answer</Button>
       </form>
       <div className="space-x-2">
         <Button onClick={() => onFlag('dont-ask-again')} variant="outline">Don't Ask Again</Button>

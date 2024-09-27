@@ -6,25 +6,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import QuestionComponent from './QuestionComponent'
 import NotesList from './NotesList'
-import CodeEditor from './CodeEditor'
 import CreateNote from './CreateNote'
 import useQuestions from './questions'
 import { Question, Note } from '@/types'
+import { useStore } from './store'
 
 export default function QuestionAnswerApp() {
   const [questions, setQuestions] = useState<Question[]>([])
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [score, setScore] = useState(0)
-  const [notes, setNotes] = useState<Note[]>([])
+  const [note, setNote] = useState<Note>()
   const [activeTab, setActiveTab] = useState('question')
   const [feedback, setFeedback] = useState('')
   const [quizFinished, setQuizFinished] = useState(false)
   const [code, setCode] = useState<string>('')
   const [debugInfo, setDebugInfo] = useState<string>('')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-
+  const [createNoteData, setCreateNoteData] = useState<Partial<Note> | null>(null)
   const { questions: fetchedQuestions, loading, error } = useQuestions()
+  const { setNotes } = useStore()
 
   useEffect(() => {
     const debugLog = (message: string) => {
@@ -56,6 +57,25 @@ export default function QuestionAnswerApp() {
 
     let isCorrect = false
     let feedbackText = ''
+
+    const newScore = isCorrect ? score + 1 : score
+    setScore(newScore)
+    setFeedback(feedbackText)
+
+    const newNote: Note = {
+      id: Date.now(),
+      questionId: currentQuestion.id.toString(),
+      question: currentQuestion.question,
+      userAnswer: answer,
+      correctAnswer: currentQuestion.correctAnswer,
+      isCorrect,
+      explanation: feedbackText,
+      score: newScore,
+      comments: '', // Initialize with empty notes
+      versions: [],
+    }
+    setNote(newNote)
+    setNotes((prevNotes) => [...prevNotes, newNote])
 
     if (currentQuestion.type === 'multiple-choice') {
       isCorrect = answer === currentQuestion.correctAnswer
@@ -92,22 +112,6 @@ export default function QuestionAnswerApp() {
       }
     }
 
-    setScore(prevScore => isCorrect ? prevScore + 1 : prevScore)
-    setFeedback(feedbackText)
-
-    const newNote: Note = {
-      id: Date.now(),
-      questionId: currentQuestion.id,
-      question: currentQuestion.question,
-      userAnswer: answer,
-      explanation: feedbackText,
-      isCorrect,
-      notes: '',
-      versions: [],
-    }
-
-    setNotes(prevNotes => [...prevNotes, newNote])
-
     setTimeout(() => {
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(prevIndex => prevIndex + 1)
@@ -138,14 +142,7 @@ export default function QuestionAnswerApp() {
     }
   }
 
-  const handleCreateNote = (note: Omit<Note, 'id'>) => {
-    const newNote: Note = {
-      ...note,
-      id: Date.now(),
-    }
-    setNotes(prevNotes => [...prevNotes, newNote])
-    setActiveTab('notes')
-  }
+
 
   const restartQuiz = () => {
     setCurrentQuestionIndex(0)
@@ -187,12 +184,14 @@ export default function QuestionAnswerApp() {
     )
   }
 
+
+
   return (
     <div className="min-h-screen bg-blue-100 p-8">
       <Card className="max-w-4xl mx-auto">
         <CardHeader>
           <CardTitle className="text-3xl font-bold text-blue-800">
-            Q&A App
+          New AI Quiz Generator App
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -204,9 +203,10 @@ export default function QuestionAnswerApp() {
           )}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-3">
+            
               <TabsTrigger value="question">Question</TabsTrigger>
-              <TabsTrigger value="notes">Notes</TabsTrigger>
-              <TabsTrigger value="create-note">Create Note</TabsTrigger>
+              <TabsTrigger value="create-note">Create Notes</TabsTrigger>
+              <TabsTrigger value="notes">Note List</TabsTrigger>
             </TabsList>
             <TabsContent value="question">
               {currentQuestion ? (
@@ -219,12 +219,6 @@ export default function QuestionAnswerApp() {
                     onAnswer={handleAnswer}
                     onFlag={handleFlag}
                   />
-                  {currentQuestion.type === 'code' && (
-                    <CodeEditor
-                      code={code}
-                      setCode={setCode}
-                    />
-                  )}
                   {feedback && (
                     <div
                       className={`mt-4 p-2 ${
@@ -243,23 +237,18 @@ export default function QuestionAnswerApp() {
                 </div>
               )}
             </TabsContent>
-            <TabsContent value="notes">
-              <NotesList
-                notes={notes}
-                setNotes={setNotes}
-              />
-            </TabsContent>
             <TabsContent value="create-note">
-              <CreateNote onCreateNote={handleCreateNote} />
+              <CreateNote note={note} />
             </TabsContent>
+            <TabsContent value="notes">
+              <NotesList />
+            </TabsContent>
+
           </Tabs>
           <div className="mt-4 text-xl font-semibold text-blue-800">
             Score: {score}
           </div>
-          <div className="mt-4 p-4 bg-gray-100 rounded-md">
-            <h3 className="font-semibold mb-2">Debug Information:</h3>
-            <pre className="whitespace-pre-wrap text-sm overflow-auto max-h-40">{debugInfo}</pre>
-          </div>
+  
         </CardContent>
       </Card>
     </div>

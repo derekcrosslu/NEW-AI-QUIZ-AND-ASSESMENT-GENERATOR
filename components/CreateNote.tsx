@@ -1,96 +1,84 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { Note } from '@/types'
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { useStore } from './store'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 
-interface Note {
-  questionId: number | null
-  question: string
-  userAnswer: string
-  explanation: string
-  isCorrect: boolean
-  notes: string
-  versions: string[]
-}
-
 interface CreateNoteProps {
-  onCreateNote: (note: Omit<Note, 'id'>) => void
+  note?: Note
 }
 
-export default function CreateNote({ onCreateNote }: CreateNoteProps) {
-  const [question, setQuestion] = useState('')
-  const [userAnswer, setUserAnswer] = useState('')
-  const [explanation, setExplanation] = useState('')
-  const [isCorrect, setIsCorrect] = useState(false)
-  const [notes, setNotes] = useState('')
+export default function CreateNote({ note }: CreateNoteProps) {
+  const [localComment, setLocalComment] = useState<string>('')
+  const { notes, setNotes } = useStore()
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onCreateNote({
-      questionId: null,
-      question,
-      userAnswer,
-      explanation,
-      isCorrect,
-      notes,
-      versions: [],
-    })
-    // Reset form
-    setQuestion('')
-    setUserAnswer('')
-    setExplanation('')
-    setIsCorrect(false)
-    setNotes('')
+  // useEffect(() => {
+  //   if (note) {
+  //     setLocalComment(note.comments)
+  //   }
+  // }, [note])
+
+  const handleNoteChange = (value: string) => { 
+    setLocalComment(value)
+  }
+
+  const handleSaveNote = () => {
+    if (note) {
+      let updatedNotes: Note[];
+      if (Array.isArray(notes)) {
+        const existingNoteIndex = notes.findIndex(note => note.id === note.id);
+        if (existingNoteIndex !== -1) {
+          // Update existing note
+          updatedNotes = notes.map(note => 
+            note.id === note.id ? { ...note, comments: localComment } : note
+          );
+        } else {
+          // Add new note
+          updatedNotes = [...notes, { ...note, comments: localComment }];
+        }
+      } else {
+        // If notes is not an array, initialize it with the current note
+        updatedNotes = [{ ...note, comments: localComment }];
+      }
+      setNotes(updatedNotes);
+    }
+  }
+
+  if (!note) {
+    return <div>No note available</div>
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Label htmlFor="question">Question</Label>
-        <Input
-          id="question"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          required
-        />
-      </div>
-      <div>
-        <Label htmlFor="userAnswer">Your Answer</Label>
-        <Input
-          id="userAnswer"
-          value={userAnswer}
-          onChange={(e) => setUserAnswer(e.target.value)}
-          required
-        />
-      </div>
-      <div>
-        <Label htmlFor="explanation">Explanation</Label>
-        <Textarea
-          id="explanation"
-          value={explanation}
-          onChange={(e) => setExplanation(e.target.value)}
-          required
-        />
-      </div>
-      <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
-          id="isCorrect"
-          checked={isCorrect}
-          onChange={(e) => setIsCorrect(e.target.checked)}
-        />
-        <Label htmlFor="isCorrect">Correct Answer</Label>
-      </div>
-      <div>
-        <Label htmlFor="notes">Notes</Label>
-        <Textarea
-          id="notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-        />
-      </div>
-      <Button type="submit">Create Note</Button>
-    </form>
+    <Card className="w-full max-w-3xl mx-auto">
+      <CardHeader>
+        <CardTitle>Question and Answer</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <Label className="font-bold">Question:</Label>
+          <p>{note.question}</p>
+        </div>
+        <div>
+          <Label className="font-bold">Your Answer:</Label>
+          <p>{note.userAnswer}</p>
+        </div>
+        <div>
+          <Label className="font-bold">Correct Answer:</Label>
+          <p>{note.correctAnswer}</p>
+        </div>
+        <div>
+          <Label className="font-bold">Explanation:</Label>
+          <p>{note.explanation}</p>
+        </div>
+        <div>
+          <Label className="font-bold">Score:</Label>
+          <p>{note.score}</p>
+        </div>
+
+        <Button onClick={handleSaveNote}>Save Note</Button>
+      </CardContent>
+    </Card>
   )
 }

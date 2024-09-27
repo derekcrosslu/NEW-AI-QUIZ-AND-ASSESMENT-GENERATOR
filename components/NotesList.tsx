@@ -1,55 +1,68 @@
 import React from 'react'
 import { Note } from '@/types'
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { useStore } from './store'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-interface NotesListProps {
-  notes: Note[]
-  setNotes: React.Dispatch<React.SetStateAction<Note[]>>
-}
+export default function NotesList() {
+  const { notes, setNotes } = useStore()
 
-export default function NotesList({ notes, setNotes }: NotesListProps) {
   const handleNoteChange = (id: number, field: keyof Note, value: string) => {
-    setNotes(prevNotes =>
-      prevNotes.map(note =>
+    setNotes(
+      notes.map(note =>
         note.id === id ? { ...note, [field]: value } : note
       )
     )
   }
 
   const handleAddVersion = (id: number) => {
-    setNotes(prevNotes =>
-      prevNotes.map(note =>
-        note.id === id ? { ...note, versions: [...note.versions, note.notes] } : note
+    setNotes(
+      notes.map(note =>
+        note.id === id ? { ...note, versions: [...(note.versions || []), note.notes] } : note
       )
     )
+  }
+
+  if (!Array.isArray(notes) || notes.length === 0) {
+    return <div>No notes available</div>
   }
 
   return (
     <div className="space-y-4">
       {notes.map(note => (
-        <div key={note.id} className="border p-4 rounded-md">
-          <h3 className="font-bold mb-2">{note.question}</h3>
-          <p className="mb-2">Your answer: {note.userAnswer}</p>
-          <p className="mb-2">Correct: {note.isCorrect ? 'Yes' : 'No'}</p>
-          <p className="mb-2">Explanation: {note.explanation}</p>
-          <Textarea
-            value={note.notes}
-            onChange={(e) => handleNoteChange(note.id, 'notes', e.target.value)}
-            placeholder="Add your notes here..."
-            className="mb-2"
-          />
-          <Button onClick={() => handleAddVersion(note.id)} className="mb-2">Save Version</Button>
-          {note.versions.length > 0 && (
+        <Card key={note.id} className="w-full">
+          <CardHeader>
+            <CardTitle>Question ID: {note.questionId}</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p><strong>Note ID:</strong> {note.id}</p>
+            <p><strong>Question:</strong> {note.question}</p>
+            <p><strong>Your answer:</strong> {note.userAnswer}</p>
+            <p><strong>Correct answer:</strong> {note.correctAnswer}</p>
+            <p><strong>Correct:</strong> {note.isCorrect ? 'Yes' : 'No'}</p>
+            <p><strong>Explanation:</strong> {note.explanation}</p>
+            <p><strong>Score at this point:</strong> {note.score}</p>
             <div>
-              <h4 className="font-bold mb-2">Previous Versions:</h4>
-              {note.versions.map((version, index) => (
-                <p key={index} className="mb-1">{version}</p>
-              ))}
+              <strong>Your notes:</strong>
+              <Textarea
+                value={note.notes}
+                onChange={(e) => handleNoteChange(note.id, 'notes', e.target.value)}
+                placeholder="Add your notes here..."
+                className="mt-1"
+              />
             </div>
-          )}
-        </div>
+            <Button onClick={() => handleAddVersion(note.id)}>Save Version</Button>
+            {note.versions && note.versions.length > 0 && (
+              <div>
+                <h4 className="font-bold mt-2">Previous Versions:</h4>
+                {note.versions.map((version, index) => (
+                  <p key={index} className="mt-1">{version}</p>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       ))}
     </div>
   )

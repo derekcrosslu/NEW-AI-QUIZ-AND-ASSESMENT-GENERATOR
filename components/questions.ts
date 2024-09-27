@@ -34,17 +34,12 @@ export default function useQuestions() {
     setLoading(true);
     const timestamp = new Date().getTime();
     try {
-
       const response = await axios.get(`/questions.json?t=${timestamp}`);
-      console.log('API Response:', response.data);
-      
       if (response.data && Array.isArray(response.data.questions)) {
         const allQuestions = response.data.questions[0]; // Access the nested array
-
         
         const shuffledQuestions = shuffleArray([...allQuestions]);
-
-        
+       
         setQuestions(shuffledQuestions);
       } else {
         setError('Unexpected data format received from the server');
