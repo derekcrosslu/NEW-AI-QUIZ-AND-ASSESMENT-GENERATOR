@@ -12,37 +12,48 @@ interface CreateNoteProps {
 
 export default function CreateNote({ note }: CreateNoteProps) {
   const [localComment, setLocalComment] = useState<string>('')
-  const { notes, setNotes } = useStore()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { notes, setNotes, addNote, syncWithRedis } = useStore()
 
-  // useEffect(() => {
-  //   if (note) {
-  //     setLocalComment(note.comments)
-  //   }
-  // }, [note])
+
+  useEffect(() => {
+    if (note) {
+      setLocalComment(note.comments)
+    }
+  }, [note])
 
   const handleNoteChange = (value: string) => { 
     setLocalComment(value)
   }
 
-  const handleSaveNote = () => {
-    if (note) {
-      let updatedNotes: Note[];
-      if (Array.isArray(notes)) {
-        const existingNoteIndex = notes.findIndex(note => note.id === note.id);
-        if (existingNoteIndex !== -1) {
-          // Update existing note
-          updatedNotes = notes.map(note => 
-            note.id === note.id ? { ...note, comments: localComment } : note
-          );
-        } else {
-          // Add new note
-          updatedNotes = [...notes, { ...note, comments: localComment }];
-        }
+  const handleSaveNote = async () => {
+    if (!note) return
+
+    setIsSubmitting(true)
+    try {
+      console.log('Saving note:', note)
+      if (notes.some(n => n.id === note.id)) {
+        // Update existing note
+        const updatedNotes = notes.map(n => 
+          n.id === note.id ? { ...n, comments: localComment } : n
+        )
+        await setNotes(updatedNotes)
+        console.log('Updated notes:', updatedNotes)
       } else {
-        // If notes is not an array, initialize it with the current note
-        updatedNotes = [{ ...note, comments: localComment }];
+        // Add new note
+        await addNote({ ...note, comments: localComment })
+        console.log('Added new note')
       }
-      setNotes(updatedNotes);
+      
+      // Explicitly call syncWithRedis
+      console.log('Calling syncWithRedis')
+      await syncWithRedis()
+      
+      console.log('Note saved and synced successfully')
+    } catch (error) {
+      console.error('Failed to save or sync note:', error)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -76,8 +87,18 @@ export default function CreateNote({ note }: CreateNoteProps) {
           <Label className="font-bold">Score:</Label>
           <p>{note.score}</p>
         </div>
-
-        <Button onClick={handleSaveNote}>Save Note</Button>
+        <div>
+          <Label className="font-bold">Comments:</Label>
+          <Textarea
+            value={localComment}
+            onChange={(e) => handleNoteChange(e.target.value)}
+            placeholder="Add your comments here..."
+            className="mt-1"
+          />
+        </div>
+        <Button onClick={handleSaveNote} disabled={isSubmitting}>
+          {isSubmitting ? 'Saving...' : 'Save Note'}
+        </Button>
       </CardContent>
     </Card>
   )

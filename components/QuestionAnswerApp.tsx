@@ -9,7 +9,7 @@ import NotesList from './NotesList'
 import CreateNote from './CreateNote'
 import useQuestions from './questions'
 import { Question, Note } from '@/types'
-import { useStore } from './store'
+import {useStore}  from './store'
 
 export default function QuestionAnswerApp() {
   const [questions, setQuestions] = useState<Question[]>([])
@@ -26,6 +26,12 @@ export default function QuestionAnswerApp() {
   const [createNoteData, setCreateNoteData] = useState<Partial<Note> | null>(null)
   const { questions: fetchedQuestions, loading, error } = useQuestions()
   const { setNotes } = useStore()
+
+  const fetchNotesFromRedis = useStore(state => state.fetchNotesFromRedis)
+
+  useEffect(() => {
+    fetchNotesFromRedis()
+  }, [])
 
   useEffect(() => {
     const debugLog = (message: string) => {
@@ -75,7 +81,7 @@ export default function QuestionAnswerApp() {
       versions: [],
     }
     setNote(newNote)
-    setNotes((prevNotes) => [...prevNotes, newNote])
+    setNotes(prevNotes => [...prevNotes, newNote])
 
     if (currentQuestion.type === 'multiple-choice') {
       isCorrect = answer === currentQuestion.correctAnswer
