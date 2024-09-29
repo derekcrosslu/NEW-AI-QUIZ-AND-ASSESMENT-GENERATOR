@@ -60,29 +60,10 @@ export default function QuestionAnswerApp() {
 
   const handleAnswer = async (answer: string) => {
     if (!currentQuestion) return
-
+  
     let isCorrect = false
     let feedbackText = ''
-
-    const newScore = isCorrect ? score + 1 : score
-    setScore(newScore)
-    setFeedback(feedbackText)
-
-    const newNote: Note = {
-      id: Date.now(),
-      questionId: currentQuestion.id.toString(),
-      question: currentQuestion.question,
-      userAnswer: answer,
-      correctAnswer: currentQuestion.correctAnswer,
-      isCorrect,
-      explanation: feedbackText,
-      score: newScore,
-      comments: '', // Initialize with empty notes
-      versions: [],
-    }
-    setNote(newNote)
-    setNotes(prevNotes => [...prevNotes, newNote])
-
+  
     if (currentQuestion.type === 'multiple-choice') {
       isCorrect = answer === currentQuestion.correctAnswer
       feedbackText = isCorrect
@@ -102,12 +83,12 @@ export default function QuestionAnswerApp() {
             questionType: currentQuestion.type,
           }),
         })
-
+  
         if (!response.ok) {
           const errorData = await response.json()
           throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.message}, error: ${errorData.error}`)
         }
-
+  
         const data = await response.json()
         isCorrect = data.isCorrect
         feedbackText = data.feedback
@@ -117,7 +98,28 @@ export default function QuestionAnswerApp() {
         feedbackText = "Sorry, we couldn't evaluate your answer. Please try again."
       }
     }
-
+  
+    // Update score after determining if the answer is correct
+    const newScore = isCorrect ? score + 1 : score
+    setScore(newScore)
+    setFeedback(feedbackText)
+  
+    const newNote: Note = {
+      id: Date.now(),
+      questionId: currentQuestion.id.toString(),
+      question: currentQuestion.question,
+      userAnswer: answer,
+      correctAnswer: currentQuestion.correctAnswer,
+      isCorrect,
+      explanation: feedbackText,
+      score: newScore,
+      comments: '', // Initialize with empty notes
+      versions: [],
+    }
+    setNote(newNote)
+    setNotes(prevNotes => [...prevNotes, newNote])
+  
+    // Move to the next question after a delay
     setTimeout(() => {
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex(prevIndex => prevIndex + 1)
@@ -147,9 +149,6 @@ export default function QuestionAnswerApp() {
       }
     }
   }
-
-
-
   const restartQuiz = () => {
     setCurrentQuestionIndex(0)
     setScore(0)
@@ -160,7 +159,6 @@ export default function QuestionAnswerApp() {
       setCurrentQuestion(questions[0])
     }
   }
-
   if (loading) {
     return (
       <div className="min-h-screen bg-blue-100 p-8">
@@ -175,7 +173,6 @@ export default function QuestionAnswerApp() {
       </div>
     )
   }
-
   if (error) {
     return (
       <div className="min-h-screen bg-blue-100 p-8">
@@ -189,9 +186,6 @@ export default function QuestionAnswerApp() {
       </div>
     )
   }
-
-
-
   return (
     <div className="min-h-screen bg-blue-100 p-8">
       <Card className="max-w-4xl mx-auto">
@@ -249,12 +243,10 @@ export default function QuestionAnswerApp() {
             <TabsContent value="notes">
               <NotesList />
             </TabsContent>
-
           </Tabs>
           <div className="mt-4 text-xl font-semibold text-blue-800">
             Score: {score}
           </div>
-  
         </CardContent>
       </Card>
     </div>

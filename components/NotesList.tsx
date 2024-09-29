@@ -1,12 +1,33 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Note } from '@/types'
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { useStore } from './store'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import Prism from 'prismjs'
+import 'prismjs/themes/prism.css'
+import 'prismjs/components/prism-javascript'
+
+const CodeBlock = ({ code, language }: { code: string, language: string }) => {
+  useEffect(() => {
+    Prism.highlightAll()
+  }, [code])
+
+  return (
+    <pre>
+      <code className={`language-${language}`}>
+        {code}
+      </code>
+    </pre>
+  )
+}
 
 export default function NotesList() {
   const { notes, setNotes } = useStore()
+
+  useEffect(() => {
+    Prism.highlightAll()
+  }, [notes])
 
   const handleNoteChange = (id: number, field: keyof Note, value: string) => {
     setNotes(
@@ -28,6 +49,14 @@ export default function NotesList() {
     return <div>No notes available</div>
   }
 
+  const detectLanguage = (code: string): string => {
+    // Simple language detection logic
+    if (code.includes('def ') || code.includes('import ')) return 'python'
+    if (code.includes('function ') || code.includes('const ')) return 'javascript'
+    if (code.includes('public class ') || code.includes('System.out.println')) return 'java'
+    return 'plaintext'
+  }
+
   return (
     <div className="space-y-4">
       {notes.map(note => (
@@ -38,8 +67,14 @@ export default function NotesList() {
           <CardContent className="space-y-2">
             <p><strong>Note ID:</strong> {note.id}</p>
             <p><strong>Question:</strong> {note.question}</p>
-            <p><strong>Your answer:</strong> {note.userAnswer}</p>
-            <p><strong>Correct answer:</strong> {note.correctAnswer}</p>
+            <div>
+              <strong>Your answer:</strong>
+              <CodeBlock code={note.userAnswer} language={detectLanguage(note.userAnswer)} />
+            </div>
+            <div>
+              <strong>Correct answer:</strong>
+              <CodeBlock code={note.correctAnswer} language={detectLanguage(note.correctAnswer)} />
+            </div>
             <p><strong>Correct:</strong> {note.isCorrect ? 'Yes' : 'No'}</p>
             <p><strong>Explanation:</strong> {note.explanation}</p>
             <p><strong>Score at this point:</strong> {note.score}</p>
